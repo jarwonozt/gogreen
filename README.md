@@ -1,6 +1,6 @@
 # 🟩 GoGreen — Auto Commit dengan Vite.js
 
-Proyek ini secara otomatis melakukan commit ke GitHub setiap 3 jam menggunakan GitHub Actions, dengan Vite.js sebagai build tool. Tujuannya adalah menjaga GitHub contribution graph tetap hijau.
+Proyek ini secara otomatis melakukan commit ke GitHub setiap 10 menit menggunakan GitHub Actions atau cron-job.org, dengan Vite.js sebagai build tool. Tujuannya adalah menjaga GitHub contribution graph tetap hijau.
 
 ---
 
@@ -14,6 +14,7 @@ Proyek ini secara otomatis melakukan commit ke GitHub setiap 3 jam menggunakan G
 - [Workflow GitHub Actions](#workflow-github-actions)
 - [Konfigurasi Jadwal](#konfigurasi-jadwal)
 - [Menjalankan Secara Lokal](#menjalankan-secara-lokal)
+- [Alternatif: Trigger via cron-job.org](#alternatif-trigger-via-cron-joborg)
 - [FAQ](#faq)
 
 ---
@@ -130,10 +131,10 @@ Setiap commit menggunakan pesan acak dari daftar berikut:
 
 Proyek ini memiliki 3 workflow:
 
-### `auto_commit_vite.yml` — Auto Commit Vite (Setiap 3 Jam)
+### `auto_commit_vite.yml` — Auto Commit (Setiap 10 Menit)
 
-- **Trigger:** Jadwal otomatis setiap 3 jam + bisa dijalankan manual
-- **Yang dilakukan:** Build Vite.js → update timestamp → commit → push
+- **Trigger:** Jadwal otomatis setiap 10 menit + manual + `repository_dispatch` dari cron-job.org
+- **Yang dilakukan:** Update timestamp → commit → push
 - **Jadwal:** `*/10 * * * *` (setiap 10 menit)
 
 ### `commit_cheat.yml` — Auto Commit (Setiap Jam)
@@ -207,6 +208,85 @@ npm run preview
 3. Pilih workflow **Commit Now**
 4. Klik **Run workflow**
 5. Isi form input dan klik **Run workflow**
+
+---
+
+## Alternatif: Trigger via cron-job.org
+
+Jika GitHub Actions tidak bisa berjalan karena billing issue, gunakan **cron-job.org** (gratis) sebagai scheduler eksternal yang memanggil GitHub API setiap 10 menit.
+
+### Cara Kerja
+
+```
+cron-job.org (setiap 10 menit)
+        │
+        │  POST ke GitHub API (repository_dispatch)
+        ▼
+GitHub Actions — workflow terpicu
+        │
+        │  commit LAST_UPDATED + push ke main
+        ▼
+Hostinger — auto-deploy otomatis
+```
+
+---
+
+### Step 1 — Buat GitHub Personal Access Token
+
+1. Buka `https://github.com/settings/tokens/new`
+2. Isi **Note**: `cron-job-gogreen`
+3. **Expiration**: No expiration
+4. Centang scope: **`repo`** dan **`workflow`**
+5. Klik **Generate token**
+6. **Salin tokennya** — hanya tampil sekali, simpan baik-baik
+
+---
+
+### Step 2 — Daftar di cron-job.org
+
+1. Buka `https://cron-job.org` → **Sign up** (gratis)
+2. Setelah login, klik **CREATE CRONJOB**
+
+---
+
+### Step 3 — Konfigurasi Cronjob
+
+**Tab "General":**
+
+| Field | Value |
+|-------|-------|
+| Title | `gogreen auto commit` |
+| URL | `https://api.github.com/repos/jarwonozt/gogreen/dispatches` |
+| Execution schedule | Every **10 minutes** |
+
+**Tab "Advanced":**
+
+- **Request method**: `POST`
+- **Request headers** — tambahkan 3 header:
+
+| Header Name | Header Value |
+|-------------|--------------|
+| `Authorization` | `Bearer PASTE_TOKEN_DISINI` |
+| `Accept` | `application/vnd.github+json` |
+| `Content-Type` | `application/json` |
+
+- **Request body**:
+
+```json
+{"event_type": "manual_trigger"}
+```
+
+Klik **CREATE**.
+
+---
+
+### Step 4 — Test
+
+1. Di cron-job.org, klik cronjob yang baru dibuat
+2. Klik **Run now**
+3. Buka `https://github.com/jarwonozt/gogreen/actions` — cek apakah workflow berjalan dengan trigger `repository_dispatch`
+
+> Workflow sudah dikonfigurasi untuk menerima trigger `repository_dispatch` dengan event type `manual_trigger`.
 
 ---
 

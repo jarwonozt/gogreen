@@ -1,4 +1,4 @@
-name: Auto Commit Vite (Every 3 Hours)
+name: Auto Commit Vite (Every 10 Minutes)
 
 on:
   schedule:
@@ -11,14 +11,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Install dependencies
@@ -34,11 +31,10 @@ jobs:
 
       - name: Commit and push
         run: |
-          git config --global --add safe.directory /github/workspace
           git config --local user.email "jarwonozt@gmail.com"
           git config --local user.name "jarwonozt"
 
-          git add -A
+          git add LAST_UPDATED
 
           arr[0]="chore(bot): 😂 auto commit"
           arr[1]="chore(bot): 😱 auto commit"
@@ -52,11 +48,6 @@ jobs:
           arr[9]="chore(bot): 👻 auto commit"
 
           rand=$[$RANDOM % ${#arr[@]}]
-          git commit -m "${arr[$rand]}" || echo "Nothing to commit"
+          git commit -m "${arr[$rand]}"
 
-      - name: GitHub Push
-        uses: ad-m/github-push-action@v0.6.0
-        with:
-          force: true
-          directory: "."
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/jarwonozt/gogreen.git HEAD:main

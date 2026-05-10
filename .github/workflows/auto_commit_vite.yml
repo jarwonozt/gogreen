@@ -2,7 +2,7 @@ name: Auto Commit Vite (Every 3 Hours)
 
 on:
   schedule:
-    - cron: "0 */3 * * *"  # runs at 0, 3, 6, 9, 12, 15, 18, 21 UTC
+    - cron: "*/10 * * * *"  # runs every 10 minutes
   workflow_dispatch:
 
 jobs:

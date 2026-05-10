@@ -134,7 +134,7 @@ Proyek ini memiliki 3 workflow:
 
 - **Trigger:** Jadwal otomatis setiap 3 jam + bisa dijalankan manual
 - **Yang dilakukan:** Build Vite.js → update timestamp → commit → push
-- **Jadwal:** `0 */3 * * *` (jam 0, 3, 6, 9, 12, 15, 18, 21 UTC)
+- **Jadwal:** `*/10 * * * *` (setiap 10 menit)
 
 ### `commit_cheat.yml` — Auto Commit (Setiap Jam)
 

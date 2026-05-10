@@ -1,0 +1,62 @@
+name: Auto Commit Vite (Every 3 Hours)
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"  # runs at 0, 3, 6, 9, 12, 15, 18, 21 UTC
+  workflow_dispatch:
+
+jobs:
+  build_and_commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Vite project
+        run: npm run build
+
+      - name: Update LAST_UPDATED
+        run: |
+          d=`date '+%Y-%m-%dT%H:%M:%SZ'`
+          echo $d > LAST_UPDATED
+
+      - name: Commit and push
+        run: |
+          git config --global --add safe.directory /github/workspace
+          git config --local user.email "jarwonozt@gmail.com"
+          git config --local user.name "jarwonozt"
+
+          git add -A
+
+          arr[0]="chore(bot): 😂 auto commit"
+          arr[1]="chore(bot): 😱 auto commit"
+          arr[2]="chore(bot): 👿 auto commit"
+          arr[3]="chore(bot): 💩 auto commit"
+          arr[4]="chore(bot): 🙏 auto commit"
+          arr[5]="chore(bot): 🙈 auto commit"
+          arr[6]="chore(bot): 🐐 auto commit"
+          arr[7]="chore(bot): 🤖 auto commit"
+          arr[8]="chore(bot): 🟩 auto commit"
+          arr[9]="chore(bot): 👻 auto commit"
+
+          rand=$[$RANDOM % ${#arr[@]}]
+          git commit -m "${arr[$rand]}" || echo "Nothing to commit"
+
+      - name: GitHub Push
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          force: true
+          directory: "."
+          github_token: ${{ secrets.GITHUB_TOKEN }}

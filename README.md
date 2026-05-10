@@ -1,4 +1,4 @@
-# 🟩 Penghijauan — Auto Commit dengan Vite.js
+# 🟩 GoGreen — Auto Commit dengan Vite.js
 
 Proyek ini secara otomatis melakukan commit ke GitHub setiap 3 jam menggunakan GitHub Actions, dengan Vite.js sebagai build tool. Tujuannya adalah menjaga GitHub contribution graph tetap hijau.
 
@@ -8,6 +8,7 @@ Proyek ini secara otomatis melakukan commit ke GitHub setiap 3 jam menggunakan G
 
 - [Prasyarat](#prasyarat)
 - [Struktur Proyek](#struktur-proyek)
+- [Deploy ke Hostinger Node.js](#deploy-ke-hostinger-nodejs)
 - [Setup Awal](#setup-awal)
 - [Cara Kerja](#cara-kerja)
 - [Workflow GitHub Actions](#workflow-github-actions)
@@ -31,7 +32,7 @@ Sebelum memulai, pastikan kamu memiliki:
 ## Struktur Proyek
 
 ```
-penghijauan/
+gogreen/
 ├── .github/
 │   └── workflows/
 │       ├── auto_commit_vite.yml   # Auto commit setiap 3 jam (Vite build)
@@ -55,8 +56,8 @@ penghijauan/
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/USERNAME/penghijauan.git
-cd penghijauan
+git clone https://github.com/jarwonozt/gogreen.git
+cd gogreen
 ```
 
 Ganti `USERNAME` dengan username GitHub kamu.
@@ -206,6 +207,117 @@ npm run preview
 3. Pilih workflow **Commit Now**
 4. Klik **Run workflow**
 5. Isi form input dan klik **Run workflow**
+
+---
+
+## Deploy ke Hostinger Node.js
+
+### Struktur File Tambahan
+
+File [server.js](server.js) berfungsi sebagai entry point untuk Hostinger. File ini menjalankan Express.js yang melayani hasil build Vite.js dari folder `dist/`.
+
+```
+gogreen/
+├── server.js      ← startup file untuk Hostinger
+├── dist/          ← hasil build Vite.js (di-serve oleh server.js)
+└── ...
+```
+
+---
+
+### Langkah 1 — Upload File ke Hostinger
+
+**Via Git (direkomendasikan):**
+
+1. Login ke **hPanel Hostinger**
+2. Buka menu **Website** → pilih domain → **Manage**
+3. Buka **Advanced** → **SSH Access** → aktifkan SSH
+4. Sambungkan via terminal:
+
+```bash
+ssh u123456789@your-server-ip -p 65002
+```
+
+5. Masuk ke direktori domain:
+
+```bash
+cd ~/domains/namadomain.com/public_html
+```
+
+6. Clone repository:
+
+```bash
+git clone https://github.com/jarwonozt/gogreen.git .
+```
+
+---
+
+### Langkah 2 — Setup Node.js di hPanel
+
+1. Di hPanel, buka **Website** → **Manage** → **Node.js**
+2. Isi konfigurasi:
+
+| Field | Nilai |
+|-------|-------|
+| **Node.js version** | `20.x` (pilih yang tersedia) |
+| **Application mode** | `Production` |
+| **Application root** | `/domains/namadomain.com/public_html` |
+| **Application URL** | `namadomain.com` |
+| **Application startup file** | `server.js` |
+
+3. Klik **Create** atau **Save**
+
+---
+
+### Langkah 3 — Install Dependencies & Build
+
+Setelah Node.js app dibuat, klik tombol **Run NPM Install** di hPanel, atau via SSH:
+
+```bash
+npm install
+npm run build
+```
+
+> Pastikan folder `dist/` sudah terbentuk setelah `npm run build`.
+
+---
+
+### Langkah 4 — Jalankan Aplikasi
+
+Di hPanel Node.js, klik tombol **Start** atau **Restart**.
+
+Cek apakah aplikasi berjalan dengan membuka domain di browser.
+
+---
+
+### Variabel Environment (Opsional)
+
+Jika perlu mengatur port atau konfigurasi lain, tambahkan di hPanel:
+
+1. Buka **Node.js** → **Environment Variables**
+2. Tambahkan:
+
+| Key | Value |
+|-----|-------|
+| `PORT` | `3000` |
+| `NODE_ENV` | `production` |
+
+---
+
+### Troubleshooting Hostinger
+
+**Aplikasi tidak mau start:**
+- Pastikan `server.js` ada di root directory
+- Cek log error di hPanel → **Node.js** → **Error logs**
+- Pastikan `npm install` sudah dijalankan dan folder `node_modules` ada
+
+**Halaman tidak tampil / 404:**
+- Pastikan `npm run build` sudah dijalankan dan folder `dist/` ada
+- Cek path di `server.js` sudah benar mengarah ke `dist/`
+
+**Port conflict:**
+- Hostinger biasanya assign port otomatis via `process.env.PORT`
+- Jangan hardcode port, biarkan `process.env.PORT || 3000`
 
 ---
 

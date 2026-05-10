@@ -31,7 +31,7 @@ jobs:
 
       - name: Commit and push
         run: |
-          git config --local user.email "jarwonozt@gmail.com"
+          git config --local user.email "jarwonoztaveiro@gmail.com"
           git config --local user.name "jarwonozt"
 
           git add LAST_UPDATED

@@ -1,33 +1,20 @@
-name: Auto Commit Vite (Every 10 Minutes)
+name: Auto Commit (Every 10 Minutes)
 
 on:
   schedule:
-    - cron: "*/10 * * * *"  # runs every 10 minutes
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 jobs:
-  build_and_commit:
+  auto_commit:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build Vite project
-        run: npm run build
-
       - name: Update LAST_UPDATED
         run: |
-          d=`date '+%Y-%m-%dT%H:%M:%SZ'`
-          echo $d > LAST_UPDATED
+          echo `date '+%Y-%m-%dT%H:%M:%SZ'` > LAST_UPDATED
 
       - name: Commit and push
         run: |
